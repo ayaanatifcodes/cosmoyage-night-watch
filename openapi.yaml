@@ -1,0 +1,335 @@
+openapi: "3.0.0"
+
+info:
+  title: NightWatch API
+  version: "1.0.0"
+  description: A tool for Cosmoyage to allow users to observe stargazing conditions by location
+
+servers:
+  - url: https://api.nightwatch.com/v1
+    description: Production server
+
+paths:
+  /score:
+    get:
+      summary: Get the score out of 10 for the location based on conditions
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: Latitude of the location
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+        - name: lon
+          in: query
+          required: true
+          description: Longitude of the location
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+      
+      responses:
+        "200":
+          description: Successfully retrieved stargazing score
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score:
+                    type: number
+                    description: Overall stargazing suitability score out of 10
+                  conditions:
+                    type: object
+                    properties:
+                      temperature:
+                        type: number
+                        description: Current temperature in Celsius
+                      humidity:
+                        type: number
+                        description: Humidity percentage (0-100)
+                      cloud_cover:
+                        type: number
+                        description: Cloud cover percentage (0-100)
+                      bortle_scale:
+                        type: integer
+                        description: Light pollution level on Bortle scale (1-9)
+                      wind_speed:
+                        type: number
+                        description: Wind speed in km/h (affects seeing quality)
+                      precipitation:
+                        type: number
+                        description: Precipitation probability percentage (0-100)
+                      visibility:
+                        type: number
+                        description: Visibility in km
+                      air_quality_index:
+                        type: integer
+                        description: Air Quality Index (0-500, lower is better for visibility)
+                      atmospheric_pressure:
+                        type: number
+                        description: Atmospheric pressure in hPa (affects atmospheric stability)
+                  message:
+                    type: string
+                    description: Human-readable message about the conditions
+        "400":
+          description: Invalid parameters provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                    example: "Latitude must be between -90 and 90, Longitude must be between -180 and 180"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+  /forecast:
+    get:
+      summary: Get the week-long forecast for the location selected
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: Latitude of the location
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+        - name: lon
+          in: query
+          required: true
+          description: Longitude of the location
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+      
+      responses:
+        "200":
+          description: Successfully retrieved 7-day forecast
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  forecast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          description: Forecast date
+                        score:
+                          type: number
+                          description: Daily stargazing score out of 10
+                        conditions:
+                          type: object
+                          properties:
+                            temperature:
+                              type: number
+                              description: Temperature in Celsius
+                            humidity:
+                              type: number
+                              description: Humidity percentage
+                            cloud_cover:
+                              type: number
+                              description: Cloud cover percentage
+                            bortle_scale:
+                              type: integer
+                              description: Light pollution level
+                            wind_speed:
+                              type: number
+                              description: Wind speed in km/h
+                            precipitation:
+                              type: number
+                              description: Precipitation probability percentage
+                            visibility:
+                              type: number
+                              description: Visibility in km
+                            air_quality_index:
+                              type: integer
+                              description: Air Quality Index
+                            atmospheric_pressure:
+                              type: number
+                              description: Atmospheric pressure in hPa
+        "400":
+          description: Invalid parameters provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+  /lightpollution:
+    get:
+      summary: Get the light pollution level for a location using the Bortle scale
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: Latitude of the location
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+        - name: lon
+          in: query
+          required: true
+          description: Longitude of the location
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+      
+      responses:
+        "200":
+          description: Successfully retrieved light pollution data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bortle_scale:
+                    type: integer
+                    description: Bortle scale value (1=pristine, 9=extreme light pollution)
+                  bortle_description:
+                    type: string
+                    description: Human-readable description of the Bortle scale level
+                  light_pollution_level:
+                    type: number
+                    description: Light pollution level in nanoLamberts (for detailed reference)
+        "400":
+          description: Invalid parameters provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+  /moonphase:
+    get:
+      summary: Get the current moon phase for the location selected
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: Latitude of the location
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+        - name: lon
+          in: query
+          required: true
+          description: Longitude of the location
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+      
+      responses:
+        "200":
+          description: Successfully retrieved moon phase information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phase:
+                    type: string
+                    description: Current moon phase (e.g., New, Waxing Crescent, First Quarter, Waxing Gibbous, Full, Waning Gibbous, Last Quarter, Waning Crescent)
+                  illumination:
+                    type: number
+                    description: Moon illumination percentage (0-100)
+                  days_into_cycle:
+                    type: number
+                    description: Number of days into the lunar cycle
+                  next_phase:
+                    type: string
+                    description: Name of the next lunar phase
+                  days_until_next_phase:
+                    type: number
+                    description: Days until the next lunar phase change
+        "400":
+          description: Invalid parameters provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
