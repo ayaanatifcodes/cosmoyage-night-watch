@@ -30,7 +30,6 @@ paths:
             type: number
             minimum: -180
             maximum: 180
-      
       responses:
         "200":
           description: Successfully retrieved stargazing score
@@ -59,7 +58,7 @@ paths:
                         description: Light pollution level on Bortle scale (1-9)
                       wind_speed:
                         type: number
-                        description: Wind speed in km/h (affects seeing quality)
+                        description: Wind speed in km/h
                       precipitation:
                         type: number
                         description: Precipitation probability percentage (0-100)
@@ -68,10 +67,10 @@ paths:
                         description: Visibility in km
                       air_quality_index:
                         type: integer
-                        description: Air Quality Index (0-500, lower is better for visibility)
+                        description: Air Quality Index (0-500, lower is better)
                       atmospheric_pressure:
                         type: number
-                        description: Atmospheric pressure in hPa (affects atmospheric stability)
+                        description: Atmospheric pressure in hPa
                   message:
                     type: string
                     description: Human-readable message about the conditions
@@ -119,7 +118,6 @@ paths:
             type: number
             minimum: -180
             maximum: 180
-      
       responses:
         "200":
           description: Successfully retrieved 7-day forecast
@@ -213,7 +211,6 @@ paths:
             type: number
             minimum: -180
             maximum: 180
-      
       responses:
         "200":
           description: Successfully retrieved light pollution data
@@ -230,7 +227,7 @@ paths:
                     description: Human-readable description of the Bortle scale level
                   light_pollution_level:
                     type: number
-                    description: Light pollution level in nanoLamberts (for detailed reference)
+                    description: Light pollution level in nanoLamberts
         "400":
           description: Invalid parameters provided
           content:
@@ -274,7 +271,6 @@ paths:
             type: number
             minimum: -180
             maximum: 180
-      
       responses:
         "200":
           description: Successfully retrieved moon phase information
@@ -285,7 +281,7 @@ paths:
                 properties:
                   phase:
                     type: string
-                    description: Current moon phase (e.g., New, Waxing Crescent, First Quarter, Waxing Gibbous, Full, Waning Gibbous, Last Quarter, Waning Crescent)
+                    description: Current moon phase name
                   illumination:
                     type: number
                     description: Moon illumination percentage (0-100)
@@ -320,16 +316,3 @@ paths:
                     type: string
                   message:
                     type: string
-
-components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-        message:
-          type: string
-      required:
-        - error
-        - message
