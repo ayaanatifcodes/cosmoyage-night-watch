@@ -141,7 +141,7 @@ cosmoyage-night-watch/
 
 ## Part of Cosmoyage
 
-NightWatch is built as a standalone API but is intended to serve as the live conditions and light pollution layer inside Cosmoyage, a broader platform for amateur astronomy in Pakistan. It is built on prior dark sky mapping work covering Pakistani observing sites.
+NightWatch is built as a standalone API but is intended to serve as the live conditions and light pollution layer inside Cosmoyage, a broader platform for amateur astronomy in not only Pakistan but around the world.
 
 ---
 
