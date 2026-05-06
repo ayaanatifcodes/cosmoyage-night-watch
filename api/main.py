@@ -54,12 +54,15 @@ async def get_score(
 
     data = response.json()
 
-    cloud_cover = data["clouds"]["all"] # OWM nests cloud cover under the object "clouds" and "all" is the total coverage percentage
-    humidity = data["main"]["humidity"] # OWM nests humidity under the object "main"
-    wind_speed = data["wind"]["speed"] * 3.6 # OWM gives wind speed in m/s, convert to km/h
-    temperature = data["main"]["temp"] # OWM nests temperature under the object "main"
-    visibility = data.get("visibility", 10000) / 1000 # OWM soemtimes omits this field so 'get' with a default of 10000 is used with 1k for km convert
-    precipitation = data.get("rain", {}).get("1h", 0)
+    try:
+        cloud_cover = data["clouds"]["all"] # OWM nests cloud cover under the object "clouds" and "all" is the total coverage percentage
+        humidity = data["main"]["humidity"] # OWM nests humidity under the object "main"
+        wind_speed = data["wind"]["speed"] * 3.6 # OWM gives wind speed in m/s, convert to km/h
+        temperature = data["main"]["temp"] # OWM nests temperature under the object "main"
+        visibility = data.get("visibility", 10000) / 1000 # OWM soemtimes omits this field so 'get' with a default of 10000 is used with 1k for km convert
+        precipitation = data.get("rain", {}).get("1h", 0)
+    except KeyError:
+        raise HTTPException(status_code=502, detail="Unexpected response format from weather service")
 
     score = 10
     score -= (cloud_cover / 100) * 4
