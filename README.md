@@ -1,4 +1,4 @@
-# NightWatch
+# NightWatch By Cosmoyage
 
 NightWatch is the external stargazing conditions API powering the light pollution dashboard for [Cosmoyage](https://github.com/ayaanatifcodes/cosmoyage-night-watch). It scores real-time sky conditions by location using live weather data, giving astronomers and stargazers a single number that tells them whether tonight is worth going out.
 
