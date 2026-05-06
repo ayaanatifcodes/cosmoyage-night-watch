@@ -54,7 +54,7 @@ async def get_score(
 
     data = response.json()
 
-    cloud_cover = data["clouds"]["all"]
+    cloud_cover = data["clouds"]["all"] # OWM nests cloud cover under the object "clouds"
     humidity = data["main"]["humidity"]
     wind_speed = data["wind"]["speed"] * 3.6
     temperature = data["main"]["temp"]
