@@ -104,8 +104,6 @@ Set `USE_MOCK=true` during development if your API key is not yet activated. The
 uvicorn api.main:app --reload
 ```
 
-Visit `http://localhost:8000/docs` for the interactive Swagger UI.
-
 ---
 
 ## Project Structure
