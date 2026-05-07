@@ -29,7 +29,7 @@ async def get_score(
         raise HTTPException(status_code=500, detail="Server is missing the OpenWeather API key")
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient() as client: # The thing that makes the actual web request
             response = await client.get(
                 "https://api.openweathermap.org/data/2.5/weather",
                 params={
