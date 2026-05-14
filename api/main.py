@@ -14,16 +14,6 @@ app = FastAPI(
 )
 
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
-USE_MOCK = os.getenv("USE_MOCK", "false").lower() == "true"
-
-_MOCK_WEATHER = {
-    "cloud_cover": 15,
-    "humidity": 40,
-    "wind_speed": 8.0,      # already in km/h
-    "temperature": 22.0,
-    "visibility": 9.5,      # already in km
-    "precipitation": 0.0
-}
 
 _OPENWEATHER_ERRORS = {
     401: (401, "Invalid or missing OpenWeather API key"),
@@ -33,10 +23,7 @@ _OPENWEATHER_ERRORS = {
 }
 
 async def _fetch_weather(lat: float, lon: float) -> dict:
-    """Fetch weather from OWM, or return mock data if USE_MOCK=true."""
-    if USE_MOCK:
-        return _MOCK_WEATHER
-
+    """Fetch weather from OpenWeatherMap."""
     if not OPENWEATHER_API_KEY:
         raise HTTPException(status_code=500, detail="Server is missing the OpenWeather API key")
 
@@ -105,8 +92,9 @@ async def get_score(
             "visibility": w["visibility"],
         },
         "message": f"Stargazing score for ({lat}, {lon}) is {score}/10"
-
     }
+
+
 @app.get("/moonphase")
 async def get_moonphase():
     # Days since a known new moon (Jan 6, 2000 at 18:14 UTC)
