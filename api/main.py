@@ -23,7 +23,6 @@ _OPENWEATHER_ERRORS = {
 }
 
 async def _fetch_weather(lat: float, lon: float) -> dict:
-    """Fetch weather from OpenWeatherMap."""
     if not OPENWEATHER_API_KEY:
         raise HTTPException(status_code=500, detail="Server is missing the OpenWeather API key")
 
@@ -57,9 +56,9 @@ async def _fetch_weather(lat: float, lon: float) -> dict:
         return {
             "cloud_cover": data["clouds"]["all"],
             "humidity": data["main"]["humidity"],
-            "wind_speed": data["wind"]["speed"] * 3.6,  # m/s → km/h
+            "wind_speed": data["wind"]["speed"] * 3.6,  
             "temperature": data["main"]["temp"],
-            "visibility": data.get("visibility", 10000) / 1000,  # m → km
+            "visibility": data.get("visibility", 10000) / 1000,  
             "precipitation": data.get("rain", {}).get("1h", 0)
         }
     except KeyError:
