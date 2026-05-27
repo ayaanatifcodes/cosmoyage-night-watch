@@ -42,6 +42,7 @@ export default function App() {
   const [coords, setCoords] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showLP, setShowLP] = useState(false)
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -79,6 +80,15 @@ export default function App() {
           attributionControl={false}
         >
           <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+
+          {showLP && (
+            <TileLayer
+              url="/gibs/wmts/epsg3857/best/VIIRS_Black_Marble_Nighttime_At_Sensor_Radiance/default/2023-01-01/250m/{z}/{y}/{x}.jpg"
+              maxNativeZoom={8}
+              opacity={0.85}
+            />
+          )}
+
           <CircleMarker
             center={[coords.lat, coords.lon]}
             radius={10}
@@ -97,12 +107,20 @@ export default function App() {
           <span className="brand-name">✦ NightWatch</span>
           <span className="brand-sub">by Cosmoyage</span>
         </div>
-        {coords && (
-          <div className="coords">
-            <span className="live-dot" />
-            {coords.lat.toFixed(4)}°N &nbsp; {coords.lon.toFixed(4)}°E
-          </div>
-        )}
+        <div className="topbar-right">
+          <button
+            className={`lp-toggle ${showLP ? 'active' : ''}`}
+            onClick={() => setShowLP(p => !p)}
+          >
+            💡 Light Pollution
+          </button>
+          {coords && (
+            <div className="coords">
+              <span className="live-dot" />
+              {coords.lat.toFixed(4)}°N &nbsp; {coords.lon.toFixed(4)}°E
+            </div>
+          )}
+        </div>
       </div>
 
       {loading && (
