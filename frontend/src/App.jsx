@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { MapContainer, TileLayer, CircleMarker } from 'react-leaflet'
+import { useState, useEffect, useRef } from 'react'
+import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import './App.css'
 
@@ -10,30 +10,76 @@ const MOON_ICONS = {
 }
 
 function getRating(score) {
-  if (score >= 8) return 'Excellent'
-  if (score >= 6) return 'Good'
-  if (score >= 4) return 'Fair'
-  return 'Poor'
+  if (score >= 8) return { label: 'Excellent', color: '#a8c4a2' }
+  if (score >= 6) return { label: 'Good', color: '#8bb8d4' }
+  if (score >= 4) return { label: 'Fair', color: '#c9b87a' }
+  return { label: 'Poor', color: '#c47a7a' }
 }
 
 function ScoreRing({ score }) {
-  const r = 46
+  const r = 40
   const circ = 2 * Math.PI * r
   const offset = circ - (score / 10) * circ
+  const rating = getRating(score)
   return (
-    <svg width="110" height="110" viewBox="0 0 110 110">
-      <circle cx="55" cy="55" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" />
+    <svg width="100" height="100" viewBox="0 0 100 100" className="score-svg">
+      <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="6" />
       <circle
-        cx="55" cy="55" r={r} fill="none"
-        stroke="#f97316" strokeWidth="7"
+        cx="50" cy="50" r={r} fill="none"
+        stroke={rating.color} strokeWidth="6"
         strokeDasharray={circ} strokeDashoffset={offset}
         strokeLinecap="round"
-        transform="rotate(-90 55 55)"
+        transform="rotate(-90 50 50)"
+        className="score-arc"
       />
-      <text x="55" y="50" textAnchor="middle" fill="#fff" fontSize="22" fontWeight="800">{score}</text>
-      <text x="55" y="67" textAnchor="middle" fill="rgba(255,255,255,0.35)" fontSize="10">/10</text>
+      <text x="50" y="46" textAnchor="middle" dominantBaseline="middle" fill="#e8e8e8" fontSize="20" fontWeight="700" fontFamily="'DM Mono', monospace">{score}</text>
+      <text x="50" y="62" textAnchor="middle" dominantBaseline="middle" fill="rgba(255,255,255,0.3)" fontSize="9" fontFamily="'DM Mono', monospace">/10</text>
     </svg>
   )
+}
+
+function StarField() {
+  const canvasRef = useRef(null)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+    const stars = Array.from({ length: 180 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.2 + 0.2,
+      alpha: Math.random(),
+      speed: Math.random() * 0.008 + 0.002,
+      phase: Math.random() * Math.PI * 2,
+    }))
+    let raf
+    let t = 0
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      stars.forEach(s => {
+        const a = 0.15 + 0.5 * (0.5 + 0.5 * Math.sin(t * s.speed + s.phase))
+        ctx.beginPath()
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(200,210,220,${a})`
+        ctx.fill()
+      })
+      t++
+      raf = requestAnimationFrame(draw)
+    }
+    draw()
+    return () => cancelAnimationFrame(raf)
+  }, [])
+  return <canvas ref={canvasRef} className="starfield" />
+}
+
+function FlyToLocation({ coords }) {
+  const map = useMap()
+  useEffect(() => {
+    if (coords) map.flyTo([coords.lat, coords.lon], 7, { duration: 2.4 })
+  }, [coords, map])
+  return null
 }
 
 export default function App() {
@@ -43,6 +89,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showLP, setShowLP] = useState(false)
+  const [panelVisible, setPanelVisible] = useState(false)
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -56,6 +103,7 @@ export default function App() {
           const [s, m] = await Promise.all([sRes.json(), mRes.json()])
           setScoreData(s)
           setMoonData(m)
+          setTimeout(() => setPanelVisible(true), 600)
         } catch {
           setError('API unreachable. Is Docker running?')
         } finally {
@@ -69,18 +117,23 @@ export default function App() {
     )
   }, [])
 
+  const rating = scoreData ? getRating(scoreData.score) : null
+
   return (
     <div className="app">
+      <StarField />
+
       {coords && (
         <MapContainer
           center={[coords.lat, coords.lon]}
-          zoom={8}
+          zoom={4}
           className="map"
           zoomControl={false}
           attributionControl={false}
         >
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-
+          <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          />
           {showLP && (
             <TileLayer
               url="/gibs/wmts/epsg3857/best/VIIRS_Black_Marble_Nighttime_At_Sensor_Radiance/default/2023-01-01/250m/{z}/{y}/{x}.jpg"
@@ -88,31 +141,41 @@ export default function App() {
               opacity={0.85}
             />
           )}
-
           <CircleMarker
             center={[coords.lat, coords.lon]}
-            radius={10}
-            pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.9, weight: 2 }}
+            radius={9}
+            pathOptions={{ color: '#a8c4a2', fillColor: '#a8c4a2', fillOpacity: 1, weight: 0 }}
           />
           <CircleMarker
             center={[coords.lat, coords.lon]}
-            radius={22}
-            pathOptions={{ color: '#f97316', fill: false, weight: 1, opacity: 0.35 }}
+            radius={20}
+            pathOptions={{ color: '#a8c4a2', fill: false, weight: 1, opacity: 0.3 }}
           />
+          <CircleMarker
+            center={[coords.lat, coords.lon]}
+            radius={36}
+            pathOptions={{ color: '#a8c4a2', fill: false, weight: 0.5, opacity: 0.12 }}
+          />
+          <FlyToLocation coords={coords} />
         </MapContainer>
       )}
 
       <div className="topbar">
         <div className="brand">
-          <span className="brand-name">✦ NightWatch</span>
-          <span className="brand-sub">by Cosmoyage</span>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginRight: '6px', opacity: 0.7 }}>
+            <path d="M7 0L8.5 5.5H14L9.5 8.5L11 14L7 11L3 14L4.5 8.5L0 5.5H5.5L7 0Z" fill="#a8c4a2"/>
+          </svg>
+          <span className="brand-name">NightWatch</span>
+          <span className="brand-sep">by</span>
+          <span className="brand-cosmo">Cosmoyage</span>
         </div>
         <div className="topbar-right">
           <button
             className={`lp-toggle ${showLP ? 'active' : ''}`}
             onClick={() => setShowLP(p => !p)}
           >
-            💡 Light Pollution
+            <span className="lp-dot" />
+            Light Pollution
           </button>
           {coords && (
             <div className="coords">
@@ -125,8 +188,8 @@ export default function App() {
 
       {loading && (
         <div className="overlay-center">
-          <div className="spinner" />
-          <p>Detecting location…</p>
+          <div className="loader-ring" />
+          <p className="loader-text">Scanning the sky…</p>
         </div>
       )}
 
@@ -137,14 +200,18 @@ export default function App() {
       )}
 
       {!loading && !error && scoreData && moonData && (
-        <div className="panel">
-          <div className="panel-section">
+        <div className={`panel ${panelVisible ? 'panel-in' : ''}`}>
+
+          <div className="panel-section score-section">
             <div className="section-label">Stargazing Score</div>
             <div className="score-row">
               <ScoreRing score={scoreData.score} />
-              <div>
-                <div className="score-rating">{getRating(scoreData.score)}</div>
+              <div className="score-info">
+                <div className="score-rating" style={{ color: rating.color }}>{rating.label}</div>
                 <div className="score-desc">conditions tonight</div>
+                <div className="score-bar-wrap">
+                  <div className="score-bar-fill" style={{ width: `${scoreData.score * 10}%`, background: rating.color }} />
+                </div>
               </div>
             </div>
           </div>
@@ -160,7 +227,7 @@ export default function App() {
                 <div className="moon-illum">{moonData.illumination_percent}% illuminated</div>
               </div>
             </div>
-            <div className="progress-bar">
+            <div className="progress-track">
               <div className="progress-fill" style={{ width: `${moonData.phase_cycle * 100}%` }} />
             </div>
             <div className="progress-labels"><span>New</span><span>Full</span></div>
@@ -171,23 +238,22 @@ export default function App() {
           <div className="panel-section">
             <div className="section-label">Conditions</div>
             <div className="metrics">
-              <div className="metric">
-                <div className="metric-val">{scoreData.conditions.temperature}°C</div>
-                <div className="metric-key">Temp</div>
-              </div>
-              <div className="metric">
-                <div className="metric-val">{scoreData.conditions.cloud_cover}%</div>
-                <div className="metric-key">Clouds</div>
-              </div>
-              <div className="metric">
-                <div className="metric-val">{scoreData.conditions.humidity}%</div>
-                <div className="metric-key">Humidity</div>
-              </div>
-              <div className="metric">
-                <div className="metric-val">{scoreData.conditions.wind_speed}</div>
-                <div className="metric-key">Wind m/s</div>
-              </div>
+              {[
+                { val: `${scoreData.conditions.temperature}°C`, key: 'Temp' },
+                { val: `${scoreData.conditions.cloud_cover}%`, key: 'Clouds' },
+                { val: `${scoreData.conditions.humidity}%`, key: 'Humidity' },
+                { val: `${scoreData.conditions.wind_speed}`, key: 'Wind m/s' },
+              ].map((m, i) => (
+                <div className="metric" key={i} style={{ animationDelay: `${0.1 * i + 0.8}s` }}>
+                  <div className="metric-val">{m.val}</div>
+                  <div className="metric-key">{m.key}</div>
+                </div>
+              ))}
             </div>
+          </div>
+
+          <div className="panel-footer">
+            Powered by OpenWeatherMap · Cosmoyage NightWatch
           </div>
         </div>
       )}
