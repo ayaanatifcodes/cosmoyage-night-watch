@@ -136,9 +136,10 @@ export default function App() {
           />
           {showLP && (
             <TileLayer
-              url="/gibs/wmts/epsg3857/best/VIIRS_Black_Marble_Nighttime_At_Sensor_Radiance/default/2023-01-01/250m/{z}/{y}/{x}.jpg"
+              url="https://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_Black_Marble_Nighttime_At_Sensor_Radiance/default/2023-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpg"
               maxNativeZoom={8}
-              opacity={0.85}
+              opacity={0.9}
+              attribution="NASA GIBS"
             />
           )}
           <CircleMarker
