@@ -96,18 +96,15 @@ async def get_score(
 
 @app.get("/moonphase")
 async def get_moonphase():
-    # Days since a known new moon (Jan 6, 2000 at 18:14 UTC)
     known_new_moon = datetime(2000, 1, 6, 18, 14, tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
     days_since = (now - known_new_moon).total_seconds() / 86400
 
-    lunar_cycle = 29.53059  # days
+    lunar_cycle = 29.53059  
     phase = (days_since % lunar_cycle) / lunar_cycle  # 0.0 to 1.0
 
-    # Illumination: 0% at new moon, 100% at full moon
     illumination = round((1 - math.cos(2 * math.pi * phase)) / 2 * 100, 1)
 
-    # Phase name
     if phase < 0.0625 or phase >= 0.9375:
         name = "New Moon"
     elif phase < 0.1875:
@@ -128,5 +125,5 @@ async def get_moonphase():
     return {
         "phase_name": name,
         "illumination_percent": illumination,
-        "phase_cycle": round(phase, 4),  # 0.0 = new moon, 0.5 = full moon
+        "phase_cycle": round(phase, 4),  
     }
